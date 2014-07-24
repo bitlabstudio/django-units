@@ -1,7 +1,11 @@
-Django Units
-============
+Django Units [WIP]
+==================
 
-A Django app to convert units between different systems
+A Django app to convert units between different systems.
+
+It is meant to simplify the need to use different unit systems at the same
+time. E.g. providing inputs, that allow entering distances and weights in the
+imperial or the metric system.
 
 Installation
 ------------
@@ -58,6 +62,7 @@ Usage
 TODO: Describe usage or point to docs. Also describe available settings and
 templatetags.
 
+Point to constants, form mixin and general conversion utils. [WIP]
 
 Contribute
 ----------
