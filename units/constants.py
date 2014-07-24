@@ -1,4 +1,6 @@
 """Global constants for the ``units`` app."""
+from decimal import Decimal
+
 from django.utils.translation import ugettext_lazy as _
 
 DISTANCES = {
@@ -12,13 +14,13 @@ DISTANCES = {
 }
 
 DISTANCE_UNITS = {
-    'cm': 0.01,
-    'ft': 0.3048,
-    'in': 0.0254,
-    'km': 1000.0,
-    'm': 1.0,
-    'mi': 1609.344,
-    'mm': 0.001,
+    'cm': Decimal('0.01'),
+    'ft': Decimal('0.3048'),
+    'in': Decimal('0.0254'),
+    'km': Decimal('1000.0'),
+    'm': Decimal('1.0'),
+    'mi': Decimal('1609.344'),
+    'mm': Decimal('0.001'),
 }
 
 DISTANCE_DEFAULT_CHOICES = {
@@ -39,10 +41,10 @@ WEIGHTS = {
 }
 
 WEIGHT_UNITS = {
-    'g': 0.001,
-    'kg': 1.0,
-    'lbs': 0.453592,
-    'oz': 0.0283495,
+    'g': Decimal('0.001'),
+    'kg': Decimal('1.0'),
+    'lbs': Decimal('0.453592'),
+    'oz': Decimal('0.0283495'),
 }
 
 WEIGHT_DEFAULT_CHOICES = (
