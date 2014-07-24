@@ -1,9 +1,14 @@
 """Utils for the ``units`` app."""
+import re
+
 from decimal import Decimal
 
 from django.utils.translation import ugettext_lazy as _
 
-from . import constants, settings as app_settings
+from . import (
+    constants as const,
+    settings as app_settings,
+)
 
 
 def d(val):
@@ -31,9 +36,9 @@ def convert_value(value, to_unit, from_unit=None):
     weight = False
 
     # check if, we're calculating weights or distances
-    if to_unit in constants.DISTANCES.keys():
+    if to_unit in const.DISTANCES.keys():
         distance = True
-    elif to_unit in constants.WEIGHTS.keys():
+    elif to_unit in const.WEIGHTS.keys():
         weight = True
     else:
         raise TypeError(_('The unit is not one of the allowed types.'))
@@ -45,17 +50,17 @@ def convert_value(value, to_unit, from_unit=None):
         else:
             from_unit = app_settings.WEIGHT_STANDARD_UNIT
     else:
-        if distance and from_unit not in constants.DISTANCES.keys() or (
-                weight and from_unit not in constants.WEIGHTS.keys()):
+        if distance and from_unit not in const.DISTANCES.keys() or (
+                weight and from_unit not in const.WEIGHTS.keys()):
             raise TypeError(_(
                 'Cannot convert between weight and distance types.'))
 
     if distance:
-        normal_factor = constants.DISTANCE_UNITS[from_unit]
-        conversion_factor = constants.DISTANCE_UNITS[to_unit]
+        normal_factor = const.DISTANCE_UNITS[from_unit]
+        conversion_factor = const.DISTANCE_UNITS[to_unit]
     else:
-        normal_factor = constants.WEIGHT_UNITS[from_unit]
-        conversion_factor = constants.WEIGHT_UNITS[to_unit]
+        normal_factor = const.WEIGHT_UNITS[from_unit]
+        conversion_factor = const.WEIGHT_UNITS[to_unit]
 
     result = ((d(value) * normal_factor) / conversion_factor).normalize()
     sign, digit, exponent = result.as_tuple()
@@ -63,3 +68,28 @@ def convert_value(value, to_unit, from_unit=None):
         return result
     else:
         return result.quantize(1)
+
+
+def clean_feet_inch(value):
+    """
+    Normalizes x'y" format for feet and inch to a feet decimal.
+
+    e.g. 1'6" becomes 1.5
+
+    """
+    pattern = re.compile("(?P<foot>\d+)'\s?(?P<inch>\d+)\"")
+
+    # if we happen to have a numerical type already we can just output it
+    if isinstance(value, Decimal):
+        return value
+
+    if isinstance(value, float) or isinstance(value, int):
+        return d(value)
+
+    feet, inch = re.match(pattern, value).groups()
+
+    conversion_factor = const.DISTANCE_UNITS['ft'] / const.DISTANCE_UNITS['in']
+
+    result = d(feet) + d(inch) / d(conversion_factor)
+
+    return result

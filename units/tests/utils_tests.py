@@ -30,3 +30,18 @@ class ConvertValueTestCase(TestCase):
 
         # mismatching from and to unit
         self.assertRaises(TypeError, utils.convert_value, 1, 'kg', 'in')
+
+
+class CleanFeetInchTestCase(TestCase):
+    """Tests for the ``clean_feet_inch`` utility funcion."""
+    longMessage = True
+
+    def test_function(self):
+        # decimals are passed right through
+        self.assertEqual(utils.clean_feet_inch(utils.d(1.1)), utils.d(1.1))
+
+        # floats or ints are passed through as decimal
+        self.assertEqual(utils.clean_feet_inch(1.1), utils.d(1.1))
+
+        # strings are normalized to decimal
+        self.assertEqual(utils.clean_feet_inch('2\'3"'), utils.d(2.25))
