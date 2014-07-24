@@ -77,7 +77,7 @@ def clean_feet_inch(value):
     e.g. 1'6" becomes 1.5
 
     """
-    pattern = re.compile("(?P<foot>\d+)'\s?(?P<inch>\d+)\"")
+    pattern = re.compile("(?P<foot>\d+)?'?\s?(?P<inch>\d+)?\"?")
 
     # if we happen to have a numerical type already we can just output it
     if isinstance(value, Decimal):
@@ -88,8 +88,17 @@ def clean_feet_inch(value):
 
     feet, inch = re.match(pattern, value).groups()
 
-    conversion_factor = const.DISTANCE_UNITS['ft'] / const.DISTANCE_UNITS['in']
-
-    result = d(feet) + d(inch) / d(conversion_factor)
-
-    return result
+    if inch is not None:
+        conversion_factor = const.DISTANCE_UNITS['ft'] / const.DISTANCE_UNITS['in']
+        result = d(feet) + d(inch) / d(conversion_factor)
+        return result
+    elif "'" in value:
+        # if there's only one value and there's a single quotation mark, we
+        # know that the value must be in feet
+        return d(feet)
+    elif '"' in value:
+        # if there's only one value and there's a double quotation mark, we
+        # know that the value must be in inch. The value from the tuple is
+        # still called "feet" though, so don't be mislead by this
+        conversion_factor = const.DISTANCE_UNITS['ft'] / const.DISTANCE_UNITS['in']
+        return d(feet) / d(conversion_factor)

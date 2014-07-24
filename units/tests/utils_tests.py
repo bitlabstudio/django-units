@@ -45,3 +45,9 @@ class CleanFeetInchTestCase(TestCase):
 
         # strings are normalized to decimal
         self.assertEqual(utils.clean_feet_inch('2\'3"'), utils.d(2.25))
+
+        # strings omitting the inches are normalized to decimal
+        self.assertEqual(utils.clean_feet_inch('2\''), utils.d(2))
+
+        # strings omitting the feet value are normalized to decimal
+        self.assertEqual(utils.clean_feet_inch('3"'), utils.d(0.25))
