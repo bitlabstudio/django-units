@@ -54,6 +54,7 @@ EXTERNAL_APPS = [
 
 INTERNAL_APPS = [
     'units',
+    'units.tests.test_app',
 ]
 
 INSTALLED_APPS = EXTERNAL_APPS + INTERNAL_APPS
