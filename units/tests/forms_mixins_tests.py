@@ -39,7 +39,13 @@ class UnitsFormMixinTestCase(TestCase):
         obj = form.save()
 
         self.assertEqual(obj.distance, Decimal('2.5'))
+        self.assertEqual(obj.distance_unit, 'cm')
         self.assertEqual(obj.weight, Decimal('1.53'))
+        self.assertEqual(obj.weight_unit, 'g')
+
+        form = DummymodelForm(instance=obj)
+        self.assertEqual(form.initial['distance'], self.data['distance'])
+        self.assertEqual(form.initial['weight'], self.data['weight'])
 
         bad_data = self.data.copy()
         bad_data.update({'weight_unit': 'furlong'})

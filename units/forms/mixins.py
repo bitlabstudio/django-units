@@ -3,8 +3,6 @@ from django.forms import ValidationError
 
 from .. import utils
 
-# TODO initialize with correct format and unit
-
 
 class UnitsFormMixin(object):
     """
@@ -42,3 +40,9 @@ class UnitsFormMixin(object):
                 self.clean_fieldset_method(fieldset[0], fieldset[1]),
             )
         super(UnitsFormMixin, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            for fieldset in getattr(self, 'value_fieldsets', []):
+                instance_value = getattr(self.instance, fieldset[0])
+                instance_unit = getattr(self.instance, fieldset[1])
+                self.initial[fieldset[0]] = utils.convert_value(
+                    instance_value, to_unit=instance_unit)
