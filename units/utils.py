@@ -3,8 +3,6 @@ import re
 
 from decimal import Decimal
 
-from django.utils.translation import ugettext_lazy as _
-
 from . import (
     constants as const,
     settings as app_settings,
@@ -18,49 +16,59 @@ def d(val):
     return Decimal(str(val))
 
 
-def convert_value(value, to_unit, from_unit=None):
+def convert_value(value, to_unit=None, from_unit=None):
     """
     Outputs the value as decimal in the unit specified.
 
     :param value: The value as decimal, float or int, that needs to be
       converted.
     :param to_unit: A string with the short version of the unit, that should
-      be converted into. E.g. 'm'.
+      be converted into. E.g. 'm'. If it's left empty, the default is used.
     :param from_unit: A string with the short version of the unit, that the
         value is in. E.g. 'ft'. If it's left empty, the default is used.
 
+    Note, that either ``from_unit`` or ``to_unit`` must be given.
+
     """
-    distance = False
-    normal_factor = d(1.0)
+    conversion_dict = {}
     conversion_factor = d(1.0)
-    weight = False
+    default_unit = None
+    found_unit = None
+    normal_factor = d(1.0)
+
+    # either of the units must be given
+    if from_unit is None and to_unit is None:
+        raise TypeError('Either ``to_unit`` or ``from_unit`` must be defined.')
 
     # check if, we're calculating weights or distances
-    if to_unit in const.DISTANCES.keys():
-        distance = True
-    elif to_unit in const.WEIGHTS.keys():
-        weight = True
+    if to_unit is not None:
+        found_unit = to_unit
+    elif from_unit is not None:
+        found_unit = from_unit
+
+    if found_unit in const.DISTANCES.keys():
+        conversion_dict = const.DISTANCE_UNITS
+        default_unit = app_settings.DISTANCE_STANDARD_UNIT
+    elif found_unit in const.WEIGHTS.keys():
+        conversion_dict = const.WEIGHT_UNITS
+        default_unit = app_settings.WEIGHT_STANDARD_UNIT
     else:
-        raise TypeError(_('The unit is not one of the allowed types.'))
+        raise TypeError('{0} is not one of the allowed units.'.format(
+            found_unit))
 
     # get the standard from_unit if it's not defined
     if from_unit is None:
-        if distance:
-            from_unit = app_settings.DISTANCE_STANDARD_UNIT
-        else:
-            from_unit = app_settings.WEIGHT_STANDARD_UNIT
-    else:
-        if distance and from_unit not in const.DISTANCES.keys() or (
-                weight and from_unit not in const.WEIGHTS.keys()):
-            raise TypeError(_(
-                'Cannot convert between weight and distance types.'))
+        from_unit = default_unit
+    elif to_unit is None:
+        to_unit = default_unit
 
-    if distance:
-        normal_factor = const.DISTANCE_UNITS[from_unit]
-        conversion_factor = const.DISTANCE_UNITS[to_unit]
-    else:
-        normal_factor = const.WEIGHT_UNITS[from_unit]
-        conversion_factor = const.WEIGHT_UNITS[to_unit]
+    if from_unit not in conversion_dict or to_unit not in conversion_dict:
+        raise TypeError(
+            'Cannot convert between ``{0}`` and ``{1}``.'.format(
+                from_unit, to_unit))
+
+    normal_factor = conversion_dict[from_unit]
+    conversion_factor = conversion_dict[to_unit]
 
     result = ((d(value) * normal_factor) / conversion_factor).normalize()
     sign, digit, exponent = result.as_tuple()

@@ -15,6 +15,9 @@ class ConvertValueTestCase(TestCase):
         # convert 1 ft to ft (converts to m and back to ft)
         self.assertEqual(utils.convert_value(1, 'ft', 'ft'), utils.d(1))
 
+        # convert g to kg without to_unit
+        self.assertEqual(utils.convert_value(1000, from_unit='g'), utils.d(1))
+
         # convert 1 kg to g
         self.assertEqual(utils.convert_value(1, 'g'), utils.d(1000))
 
@@ -30,6 +33,9 @@ class ConvertValueTestCase(TestCase):
 
         # mismatching from and to unit
         self.assertRaises(TypeError, utils.convert_value, 1, 'kg', 'in')
+
+        # no units given
+        self.assertRaises(TypeError, utils.convert_value, 1)
 
 
 class CleanFeetInchTestCase(TestCase):
