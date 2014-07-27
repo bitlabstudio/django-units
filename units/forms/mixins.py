@@ -1,7 +1,8 @@
 """Form mixins to handle unit model fields better."""
 from django.forms import ValidationError
+from django.utils.translation import ugettext_lazy as _
 
-from .. import utils
+from .. import exceptions, utils
 
 
 class UnitsFormMixin(object):
@@ -24,11 +25,15 @@ class UnitsFormMixin(object):
         def clean_method():
             value = self.data.get(value_field)
             unit = self.data.get(unit_field)
+            cleaned_value = value
+            if value and not unit:
+                raise ValidationError(_('Please enter a unit.'))
             # convert it to standard unit
-            try:
-                cleaned_value = utils.convert_value(value, from_unit=unit)
-            except TypeError as ex:
-                raise ValidationError(ex)
+            if value and unit:
+                try:
+                    cleaned_value = utils.convert_value(value, from_unit=unit)
+                except exceptions.WrongUnitError as ex:
+                    raise ValidationError(ex)
             return cleaned_value
         return clean_method
 
@@ -44,5 +49,6 @@ class UnitsFormMixin(object):
             for fieldset in getattr(self, 'value_fieldsets', []):
                 instance_value = getattr(self.instance, fieldset[0])
                 instance_unit = getattr(self.instance, fieldset[1])
-                self.initial[fieldset[0]] = utils.convert_value(
-                    instance_value, to_unit=instance_unit)
+                if instance_value is not None and instance_unit:
+                    self.initial[fieldset[0]] = utils.convert_value(
+                        instance_value, to_unit=instance_unit)

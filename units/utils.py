@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from . import (
     constants as const,
+    exceptions,
     settings as app_settings,
 )
 
@@ -53,8 +54,8 @@ def convert_value(value, to_unit=None, from_unit=None):
         conversion_dict = const.WEIGHT_UNITS
         default_unit = app_settings.WEIGHT_STANDARD_UNIT
     else:
-        raise TypeError('{0} is not one of the allowed units.'.format(
-            found_unit))
+        raise exceptions.WrongUnitError(
+            '{0} is not one of the allowed units.'.format(found_unit))
 
     # get the standard from_unit if it's not defined
     if from_unit is None:

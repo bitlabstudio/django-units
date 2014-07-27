@@ -51,3 +51,8 @@ class UnitsFormMixinTestCase(TestCase):
         bad_data.update({'weight_unit': 'furlong'})
         form = DummymodelForm(data=bad_data)
         self.assertFalse(form.is_valid(), msg='The form should not be valid.')
+
+        bad_data = self.data.copy()
+        bad_data.pop('weight_unit')
+        form = DummymodelForm(data=bad_data)
+        self.assertFalse(form.is_valid(), msg='The form should not be valid.')
