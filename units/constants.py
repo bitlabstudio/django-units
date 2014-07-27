@@ -23,15 +23,15 @@ DISTANCE_UNITS = {
     'mm': Decimal('0.001'),
 }
 
-DISTANCE_DEFAULT_CHOICES = {
-    'cm': DISTANCES['cm'],
-    'ft': DISTANCES['ft'],
-    'in': DISTANCES['in'],
-    'km': DISTANCES['km'],
-    'm': DISTANCES['m'],
-    'mi': DISTANCES['mi'],
-    'mm': DISTANCES['mm'],
-}
+DISTANCE_DEFAULT_CHOICES = (
+    ('cm', DISTANCES['cm']),
+    ('ft', DISTANCES['ft']),
+    ('in', DISTANCES['in']),
+    ('km', DISTANCES['km']),
+    ('m', DISTANCES['m']),
+    ('mi', DISTANCES['mi']),
+    ('mm', DISTANCES['mm']),
+)
 
 WEIGHTS = {
     'g': _('gram'),
