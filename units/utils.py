@@ -1,7 +1,8 @@
 """Utils for the ``units`` app."""
 import re
-
 from decimal import Decimal
+
+from django.utils import six
 
 from . import (
     constants as const,
@@ -15,6 +16,58 @@ def d(val):
     # a float needs to be converted to a string before passing it into Decimal
     # otherwise it'll be stored with major roundig errors
     return Decimal(str(val))
+
+
+def clean_feet_inch(value):
+    """
+    Normalizes x'y" format for feet and inch to a feet decimal.
+
+    e.g. 1'6" becomes 1.5
+
+    """
+    pattern = re.compile("(?P<foot>\d+)?'?\s?(?P<inch>\d+)?\"?")
+
+    # if we happen to have a numerical type already we can just output it
+    if isinstance(value, Decimal):
+        return value
+
+    if isinstance(value, float) or isinstance(value, int):
+        return d(value)
+
+    if isinstance(value, six.string_types) and \
+            '"' not in value and "'" not in value:
+        return d(value)
+
+    feet, inch = re.match(pattern, value).groups()
+
+    if inch is not None:
+        conversion_factor = const.DISTANCE_UNITS['ft'] / const.DISTANCE_UNITS['in']
+        result = d(feet) + d(inch) / d(conversion_factor)
+        return result
+    elif "'" in value:
+        # if there's only one value and there's a single quotation mark, we
+        # know that the value must be in feet
+        return d(feet)
+    elif '"' in value:
+        # if there's only one value and there's a double quotation mark, we
+        # know that the value must be in inch. The value from the tuple is
+        # still called "feet" though, so don't be mislead by this
+        conversion_factor = const.DISTANCE_UNITS['ft'] / const.DISTANCE_UNITS['in']
+        return d(feet) / d(conversion_factor)
+
+
+def to_feet(value):
+    """Converts a decimal to a feet/inch notation string."""
+    inches = ''
+    feet = ''
+    rounded = d(int(value))
+    rest = value - rounded
+    rest_in = rest * d(12)
+    if rest_in:
+        inches = '{0}"'.format(int(round(rest_in)))
+    if rounded:
+        feet = "{0}'".format(rounded)
+    return feet + inches
 
 
 def convert_value(value, to_unit=None, from_unit=None):
@@ -71,43 +124,18 @@ def convert_value(value, to_unit=None, from_unit=None):
     normal_factor = conversion_dict[from_unit]
     conversion_factor = conversion_dict[to_unit]
 
+    # check if the value needst to be converted from the feet/inch form into
+    # decimal
+    if isinstance(value, six.string_types) and (
+            '"' in value or "'" in value):
+        value = clean_feet_inch(value)
+
     result = ((d(value) * normal_factor) / conversion_factor).normalize()
+    if to_unit == 'ft':
+        return to_feet(result)
+
     sign, digit, exponent = result.as_tuple()
     if exponent <= 0:
         return result
     else:
         return result.quantize(1)
-
-
-def clean_feet_inch(value):
-    """
-    Normalizes x'y" format for feet and inch to a feet decimal.
-
-    e.g. 1'6" becomes 1.5
-
-    """
-    pattern = re.compile("(?P<foot>\d+)?'?\s?(?P<inch>\d+)?\"?")
-
-    # if we happen to have a numerical type already we can just output it
-    if isinstance(value, Decimal):
-        return value
-
-    if isinstance(value, float) or isinstance(value, int):
-        return d(value)
-
-    feet, inch = re.match(pattern, value).groups()
-
-    if inch is not None:
-        conversion_factor = const.DISTANCE_UNITS['ft'] / const.DISTANCE_UNITS['in']
-        result = d(feet) + d(inch) / d(conversion_factor)
-        return result
-    elif "'" in value:
-        # if there's only one value and there's a single quotation mark, we
-        # know that the value must be in feet
-        return d(feet)
-    elif '"' in value:
-        # if there's only one value and there's a double quotation mark, we
-        # know that the value must be in inch. The value from the tuple is
-        # still called "feet" though, so don't be mislead by this
-        conversion_factor = const.DISTANCE_UNITS['ft'] / const.DISTANCE_UNITS['in']
-        return d(feet) / d(conversion_factor)

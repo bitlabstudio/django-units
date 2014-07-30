@@ -27,8 +27,8 @@ class UnitsFormMixinTestCase(TestCase):
             'another_value': Decimal('1.4'),
             'distance': Decimal('250'),
             'distance_unit': 'cm',
-            'weight': Decimal('1530'),
-            'weight_unit': 'g',
+            'weight': Decimal('160'),
+            'weight_unit': 'lbs',
         }
 
     def test_form(self):
@@ -40,8 +40,8 @@ class UnitsFormMixinTestCase(TestCase):
 
         self.assertEqual(obj.distance, Decimal('2.5'))
         self.assertEqual(obj.distance_unit, 'cm')
-        self.assertEqual(obj.weight, Decimal('1.53'))
-        self.assertEqual(obj.weight_unit, 'g')
+        self.assertEqual(obj.weight, Decimal('72.57472'))
+        self.assertEqual(obj.weight_unit, 'lbs')
 
         form = DummymodelForm(instance=obj)
         self.assertEqual(form.initial['distance'], self.data['distance'])
