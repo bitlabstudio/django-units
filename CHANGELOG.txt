@@ -1,6 +1,8 @@
 === (ongoing) ===
 
 
+- added error handling for ``convert_value`` template tag
+
 === 0.2 ===
 
 - added ``convert_value`` template tag

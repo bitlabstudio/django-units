@@ -8,6 +8,8 @@ register = template.Library()
 
 
 @register.simple_tag()
-def convert_value(value, to_unit, from_unit=None):  # pragma: nocover
+def convert_value(value, to_unit, from_unit=None):
     """Calls ``convert_value`` inside a template."""
+    if not value:
+        return ''
     return convert_value_util(value, to_unit, from_unit)
